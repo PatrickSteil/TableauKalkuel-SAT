@@ -1,5 +1,5 @@
-# TableauKalk-l-SAT
-Einfacher SAT - Tableau Kalkül Solver in Python
+# TableauKalkül-SAT
+Einfacher SAT - Tableau Kalkül Solver in Python. Gedacht um sich die Schritte zu visualisieren.
 
 ```Bash
 Checking moderate SAT formula:
