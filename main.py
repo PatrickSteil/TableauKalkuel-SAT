@@ -45,6 +45,7 @@ class Implies(Formula):
 
 @lru_cache(maxsize=None)
 def expand_tableau(formula_set: frozenset, depth: int = 0) -> bool:
+    new_depth = depth
     formula_sorted = sorted(
         formula_set,
         key=lambda f: (
@@ -77,10 +78,12 @@ def expand_tableau(formula_set: frozenset, depth: int = 0) -> bool:
         elif isinstance(f, Or):
             new_branches.append(frozenset(formula_set - {f} | {f.left}))
             new_branches.append(frozenset(formula_set - {f} | {f.right}))
+            new_depth = depth + 1
             break
         elif isinstance(f, Implies):
             new_branches.append(frozenset(formula_set - {f} | {Not(f.left)}))
             new_branches.append(frozenset(formula_set - {f} | {f.right}))
+            new_depth = depth + 1
             break
         elif isinstance(f, Not) and isinstance(f.formula, And):
             new_branches.append(frozenset(formula_set - {f} | {Or(Not(f.formula.left), Not(f.formula.right))}))
@@ -98,7 +101,7 @@ def expand_tableau(formula_set: frozenset, depth: int = 0) -> bool:
         print("  " * depth + f"Assignment: {assignment}")
         return True
 
-    return any(expand_tableau(branch, depth + 1) for branch in new_branches)
+    return any(expand_tableau(branch, new_depth) for branch in new_branches)
 
 def compute_assignment(formula_set: frozenset) -> dict:
     assignment = {}
