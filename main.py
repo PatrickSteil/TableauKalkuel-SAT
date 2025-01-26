@@ -126,39 +126,20 @@ def is_tautology(formula: Formula) -> bool:
 A = Var("A")
 B = Var("B")
 C = Var("C")
-D = Var("D")
 
-large_formula = And(
+moderate_formula = And(
     Or(A, B),
     And(
-        Or(Not(B), C),
+        Or(Not(A), C),
         And(
-            Implies(A, C),
-            And(
-                Implies(C, D),
-                And(
-                    Or(Not(A), Not(D)),
-                    And(
-                        Or(Not(C), D),
-                        And(
-                            Implies(Not(B), A),
-                            And(
-                                Or(C, D),
-                                And(
-                                    Implies(Not(C), A),
-                                    Or(Not(D), Not(A))
-                                )
-                            )
-                        )
-                    )
-                )
-            )
+            Or(B, Not(C)),
+            Or(Not(B), A)
         )
     )
 )
 
-print("Checking large SAT formula:")
-print(is_satisfiable(large_formula))
+print("Checking moderate SAT formula:")
+print(is_satisfiable(moderate_formula))
 
 unsat_formula = And(
     Or(Not(A), B),
