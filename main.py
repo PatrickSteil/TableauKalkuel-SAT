@@ -69,21 +69,15 @@ def expand_tableau(formula_set: frozenset, depth: int = 0) -> bool:
 
     new_branches = []
     for f in formula_sorted:
+        # konjunktive Formeln Typ α
         if isinstance(f, Not) and isinstance(f.formula, Not):
             new_branches.append(frozenset(formula_set - {f} | {f.formula.formula}))
             break
         elif isinstance(f, And):
             new_branches.append(frozenset(formula_set - {f} | {f.left, f.right}))
             break
-        elif isinstance(f, Or):
-            new_branches.append(frozenset(formula_set - {f} | {f.left}))
-            new_branches.append(frozenset(formula_set - {f} | {f.right}))
-            new_depth = depth + 1
-            break
-        elif isinstance(f, Implies):
-            new_branches.append(frozenset(formula_set - {f} | {Not(f.left)}))
-            new_branches.append(frozenset(formula_set - {f} | {f.right}))
-            new_depth = depth + 1
+        elif isinstance(f, Not) and isinstance(f.formula, Implies):
+            new_branches.append(frozenset(formula_set - {f} | {f.formula.left, Not(f.formula.right)}))
             break
         elif isinstance(f, Not) and isinstance(f.formula, And):
             new_branches.append(frozenset(formula_set - {f} | {Or(Not(f.formula.left), Not(f.formula.right))}))
@@ -91,17 +85,23 @@ def expand_tableau(formula_set: frozenset, depth: int = 0) -> bool:
         elif isinstance(f, Not) and isinstance(f.formula, Or):
             new_branches.append(frozenset(formula_set - {f} | {Not(f.formula.left), Not(f.formula.right)}))
             break
-        elif isinstance(f, Not) and isinstance(f.formula, Implies):
-            new_branches.append(frozenset(formula_set - {f} | {f.formula.left, Not(f.formula.right)}))
+        # disjunktive Formeln Typ β
+        elif isinstance(f, Or):
+            new_branches.append(frozenset(formula_set - {f} | {f.left}))
+            new_branches.append(frozenset(formula_set - {f} | {f.right}))
+            break
+        elif isinstance(f, Implies):
+            new_branches.append(frozenset(formula_set - {f} | {Not(f.left)}))
+            new_branches.append(frozenset(formula_set - {f} | {f.right}))
             break
 
     if not new_branches:
         print("  " * depth + "✓ (Open Branch)")
         assignment = compute_assignment(formula_set)
-        print("  " * depth + f"Assignment: {assignment}")
+        print(f"Assignment: {assignment}")
         return True
 
-    return any(expand_tableau(branch, new_depth) for branch in new_branches)
+    return any(expand_tableau(branch, depth + (len(new_branches)-1)) for branch in new_branches)
 
 def compute_assignment(formula_set: frozenset) -> dict:
     assignment = {}
@@ -129,6 +129,11 @@ def is_tautology(formula: Formula) -> bool:
 A = Var("A")
 B = Var("B")
 C = Var("C")
+
+print("Checking [(A -> B) -> ((B -> C) -> (A -> C))]:")
+tautology  = Implies(Implies(A, B), Implies(Implies(B, C), Implies(A, C)))
+print(is_tautology(tautology ))
+
 
 moderate_formula = And(
     Or(A, B),
